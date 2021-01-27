@@ -13,8 +13,14 @@ export const createChatRoom = async (req, res) => {
 
   const chatroom = await ChatRoom.create({ name });
 
-  res.json({
+  res.status(201).json({
     message: 'Chat room created successfully!',
     payload: chatroom,
   });
+};
+
+export const getAllChatRooms = async (req, res) => {
+  const chatRooms = await ChatRoom.find();
+
+  res.status(200).json({ payload: chatRooms });
 };

@@ -2,10 +2,13 @@ import express from 'express';
 import { catchErrors } from '../utils/errorHandlers';
 import auth from '../middlewares/auth';
 
-import { createChatRoom } from '../controllers/chatRoom';
+import { createChatRoom, getAllChatRooms } from '../controllers/chatRoom';
 
 const router = express.Router();
 
-router.post('/', auth, catchErrors(createChatRoom));
+router
+  .route('/')
+  .post(auth, catchErrors(createChatRoom))
+  .get(auth, getAllChatRooms);
 
 export default router;

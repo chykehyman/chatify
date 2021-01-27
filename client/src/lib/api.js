@@ -1,9 +1,8 @@
 import axios from 'axios';
-
-const API_URL = 'http://localhost:8000';
+import { API_URL, CHATIFY_TOKEN } from '../constants';
 
 export const getToken = () => {
-  return localStorage.getItem('chatify-token') || null;
+  return localStorage.getItem(CHATIFY_TOKEN) || null;
 };
 
 const getHeaders = () => {
@@ -12,7 +11,7 @@ const getHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-const ApiRequest = axios.create({
+const ApiRequestWithToken = axios.create({
   baseURL: API_URL,
   headers: getHeaders(),
   responseType: 'json',
@@ -23,17 +22,11 @@ const ApiRequestWithoutToken = axios.create({
   responseType: 'json',
 });
 
-// export const refreshInstance = () =>
-//   (ApiRequest = axios.create({
-//     baseURL: API_URL,
-//     headers: getHeaders(),
-//     responseType: 'json',
-//   }));
-
 export const APIRequest = {
   postWithoutToken(url, data) {
-    return ApiRequestWithoutToken.post(url, data, {
-      responseType: 'json',
-    });
+    return ApiRequestWithoutToken.post(url, data);
+  },
+  getWithToken(url) {
+    return ApiRequestWithToken.get(url);
   },
 };
