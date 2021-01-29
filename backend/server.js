@@ -14,6 +14,9 @@ import {
   productionErrors,
 } from './utils/errorHandlers';
 
+import User from './models/user';
+import Message from './models/message';
+
 /**************** Routes Import ***************/
 import userRoutes from './routes/user';
 import chatRoomRoutes from './routes/chatRoom';
@@ -79,6 +82,30 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('Disconnected: ' + socket.userId);
+  });
+
+  socket.on('joinRoom', ({ chatroomId }) => {
+    socket.join(chatroomId);
+    console.log(`A user joined chat room ${chatroomId}`);
+  });
+  socket.on('leaveRoom', ({ chatroomId }) => {
+    socket.leave(chatroomId);
+    console.log(`A user left chat room ${chatroomId}`);
+  });
+
+  socket.on('chatroomMessage', async ({ chatroomId, message }) => {
+    const user = await User.findOne({ _id: socket.userId });
+    const newMessage = new Message({
+      chatroom: chatroomId,
+      user: socket.userId,
+      message,
+    });
+    io.to(chatroomId).emit('newMessage', {
+      message,
+      name: user.name,
+      userId: socket.userId,
+    });
+    await newMessage.save();
   });
 });
 

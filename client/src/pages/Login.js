@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
+
 import { APIRequest } from '../lib/api';
 import makeToast from '../utils/toaster';
 import verifyToken from '../utils/verifyToken';
 
-const Login = ({ history }) => {
+const Login = ({ setupSocket }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const history = useHistory();
 
   useEffect(() => {
     if (verifyToken()) history.push('/dashboard');
-  }, [history]);
+  });
 
   const loginUser = () => {
     APIRequest.postWithoutToken('/user/login', { email, password })
@@ -17,6 +20,7 @@ const Login = ({ history }) => {
         makeToast('success', response.data.message);
         localStorage.setItem('chatifyToken', response.data.token);
         history.push('/dashboard');
+        setupSocket();
       })
       .catch((error) => {
         if (

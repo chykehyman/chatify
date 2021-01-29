@@ -1,32 +1,77 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import '../styles/chatRoom.css';
+import { getToken } from '../lib/api';
 
 const ChatRoom = ({ match, socket }) => {
   const chatroomId = match.params.id;
-  const [messages, setMessages] = useState([]);
+  const [chatMessages, setChatMessages] = useState([]);
   const [userId, setUserId] = useState('');
   const messageRef = useRef();
+
+  useEffect(() => {
+    if (socket) {
+      socket.emit('joinRoom', {
+        chatroomId,
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.emit('leaveRoom', {
+          chatroomId,
+        });
+      }
+    };
+  });
+
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      setUserId(payload.id);
+    }
+    if (socket) {
+      socket.on('newMessage', (message) => {
+        const newMessages = [...chatMessages, message];
+        setChatMessages(newMessages);
+      });
+    }
+  }, [chatMessages, socket]);
+
+  const sendMessage = () => {
+    const message = messageRef.current.value.trim();
+    if (socket && message) {
+      socket.emit('chatroomMessage', {
+        chatroomId,
+        message,
+      });
+
+      messageRef.current.value = '';
+    }
+  };
 
   return (
     <div className="chatroomPage">
       <div className="chatroomSection">
         <div className="cardHeader">Chatroom Name</div>
         <div className="chatroomContent">
-          {messages.map((message, i) => (
+          {chatMessages.map((chatMessage, i) => (
             <div key={i} className="message">
               <div
                 className={
-                  userId === message.userId ? 'displayRight' : 'displayLeft'
+                  userId === chatMessage.userId ? 'displayRight' : 'displayLeft'
                 }
               >
                 <span
                   className={
-                    userId === message.userId ? 'ownMessage' : 'otherMessage'
+                    userId === chatMessage.userId
+                      ? 'ownMessage'
+                      : 'otherMessage'
                   }
                 >
-                  {message.name}:
+                  {chatMessage.name}:
                 </span>
-                <p>{message.message}</p>
+                <span>{chatMessage.message}</span>
               </div>
             </div>
           ))}
@@ -41,7 +86,9 @@ const ChatRoom = ({ match, socket }) => {
             />
           </div>
           <div>
-            <button className="join">Send</button>
+            <button className="join" onClick={sendMessage}>
+              Send
+            </button>
           </div>
         </div>
       </div>

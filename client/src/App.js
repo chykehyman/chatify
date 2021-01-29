@@ -43,7 +43,10 @@ const App = () => {
     <BrowserRouter>
       <Switch>
         <Route path="/" component={() => <Redirect to="/login" />} exact />
-        <Route path="/login" component={LoginPage} />
+        <Route
+          path="/login"
+          render={() => <LoginPage setupSocket={setupSocket} />}
+        />
         <Route path="/register" component={RegisterPage} />
         <ProtectedRoute path="/dashboard" component={DashboardPage} />
         <ProtectedRoute

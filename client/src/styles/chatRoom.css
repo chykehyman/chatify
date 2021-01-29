@@ -57,10 +57,16 @@
 }
 
 .displayRight {
-  width: 50%;
+  width: 75%;
   align-self: flex-end;
+  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  line-height: 30px;
 }
+
 .displayLeft {
-  width: 50%;
-  align-self: flex-start;
+  width: 75%;
+  text-align: left;
+  word-break: break-word;
 }

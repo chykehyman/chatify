@@ -1,16 +1,31 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { APIRequest } from '../lib/api';
 import makeToast from '../utils/toaster';
+import axios from 'axios';
+import { API_URL } from '../constants';
+import { getToken } from '../lib/api';
 
 const Dashboard = () => {
   const [chatrooms, setChatrooms] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    APIRequest.getWithToken('/chatrooms')
-      .then(({ data: { payload } }) => setChatrooms(payload))
-      .catch((error) => makeToast('error', 'Unable to fetch available rooms'));
+    console.log('GETTING ROOMS');
+    setLoading(true);
+    axios
+      .get(`${API_URL}/chatrooms`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      })
+      .then(({ data: { payload } }) => {
+        setChatrooms(payload);
+      })
+      .catch((error) => makeToast('error', 'Unable to fetch available rooms'))
+      .finally(() => setLoading(false));
   }, []);
+
+  if (loading) return <div>dashboard is loading...</div>;
 
   return (
     <div className="card">
@@ -31,9 +46,9 @@ const Dashboard = () => {
         {chatrooms.length === 0 ? (
           <div style={{ textAlign: 'center' }}>No Rooms available yet</div>
         ) : (
-          chatrooms.map((chatroom) => (
-            <div className="chatroom">
-              <div>Happy Newbie</div>
+          chatrooms.map((chatroom, i) => (
+            <div className="chatroom" key={i}>
+              <div>{chatroom.name}</div>
               <Link to={`/chatroom/${chatroom._id}`}>
                 <div className="join">Join</div>
               </Link>
